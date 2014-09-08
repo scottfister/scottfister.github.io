@@ -325,7 +325,7 @@ if (attemptedTransition) {
 ...
 {% endhighlight %}
 
-You can replace `that.transitionTo('index')` with whatever you think the default landing route should be.
+You can replace `that.transitionTo('index')` with whatever you want the default landing route to be.
 
 # Optional: Error handling on login
 If you'd like to display relevant errors to your users attemping login, modify the login controller by adding `that.set('error', error.responseJSON.error);` within the `fail` block. Then in your `login.hbs` template you can display them:

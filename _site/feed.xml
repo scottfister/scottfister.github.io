@@ -6,8 +6,8 @@
 </description>
     <link>http://scottfister.github.io/</link>
     <atom:link href="http://scottfister.github.io/feed.xml" rel="self" type="application/rss+xml" />
-    <pubDate>Sun, 07 Sep 2014 19:00:57 -0700</pubDate>
-    <lastBuildDate>Sun, 07 Sep 2014 19:00:57 -0700</lastBuildDate>
+    <pubDate>Sun, 07 Sep 2014 19:01:29 -0700</pubDate>
+    <lastBuildDate>Sun, 07 Sep 2014 19:01:29 -0700</lastBuildDate>
     <generator>Jekyll v2.3.0</generator>
     
       <item>
@@ -321,7 +321,7 @@
 &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
 &lt;span class=&quot;p&quot;&gt;...&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
 
-&lt;p&gt;You can replace &lt;code&gt;that.transitionTo(&#39;index&#39;)&lt;/code&gt; with whatever you think the default landing route should be.&lt;/p&gt;
+&lt;p&gt;You can replace &lt;code&gt;that.transitionTo(&#39;index&#39;)&lt;/code&gt; with whatever you want the default landing route to be.&lt;/p&gt;
 
 &lt;h1 id=&quot;optional-error-handling-on-login&quot;&gt;Optional: Error handling on login&lt;/h1&gt;
 &lt;p&gt;If you’d like to display relevant errors to your users attemping login, modify the login controller by adding &lt;code&gt;that.set(&#39;error&#39;, error.responseJSON.error);&lt;/code&gt; within the &lt;code&gt;fail&lt;/code&gt; block. Then in your &lt;code&gt;login.hbs&lt;/code&gt; template you can display them:&lt;/p&gt;
