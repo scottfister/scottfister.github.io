@@ -308,7 +308,7 @@ Now we'd like to show a login link to unauthenticated users and logout for authe
 {% endhighlight %}
 
 # Good UX: Taking the user to the route they attempted
-If you've implemented the mixin as I have above, when a user attempts to access a protected route it will redirect them to the login page instead and store the `attemptedTransition` on the Session object. We can use this to redirect them to the page they were attempting, after a successful sign in. Add the following snippet in your login controller below where we persist the data:
+If you've implemented the mixin as I have above, when a user attempts to access a protected route it will redirect them to the login page instead and store the `attemptedTransition` on the Session object. After a successful sign-in we can use this to redirect them to the page they were attempting. Add the following snippet in your login controller below where we persist the data:
 
 {% highlight javascript %}
 ...
@@ -320,10 +320,12 @@ if (attemptedTransition) {
   attemptedTransition.retry();
   that.set('session.attemptedTransition', null);
 } else {
-  that.transitionTo('campaigns');
+  that.transitionTo('index');
 }
 ...
 {% endhighlight %}
+
+You can replace `that.transitionTo('index')` with whatever you think the default landing route should be.
 
 # Optional: Error handling on login
 If you'd like to display relevant errors to your users attemping login, modify the login controller by adding `that.set('error', error.responseJSON.error);` within the `fail` block. Then in your `login.hbs` template you can display them:
