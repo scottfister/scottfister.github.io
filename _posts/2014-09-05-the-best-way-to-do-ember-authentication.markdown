@@ -300,9 +300,9 @@ Now we'd like to show a login link to unauthenticated users and logout for authe
 // templates/application.hbs
 <ul class="nav nav-pills">
 {% raw %}{{#if session.signedIn}}
-<li>{{#link-to "login"}}Login{{/link-to}}</li>
+  <li>{{#link-to "login"}}Login{{/link-to}}</li>
 {{else}}
-<li>{{#link-to "logout"}}Logout{{/link-to}}</li>
+  <li>{{#link-to "logout"}}Logout{{/link-to}}</li>
 {{/if}}{% endraw %}
 </ul>
 {% endhighlight %}

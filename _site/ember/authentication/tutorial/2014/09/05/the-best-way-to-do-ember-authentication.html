@@ -349,9 +349,9 @@
 <div class="highlight"><pre><code class="language-html" data-lang="html">// templates/application.hbs
 <span class="nt">&lt;ul</span> <span class="na">class=</span><span class="s">&quot;nav nav-pills&quot;</span><span class="nt">&gt;</span>
 {{#if session.signedIn}}
-<span class="nt">&lt;li&gt;</span>{{#link-to &quot;login&quot;}}Login{{/link-to}}<span class="nt">&lt;/li&gt;</span>
+  <span class="nt">&lt;li&gt;</span>{{#link-to &quot;login&quot;}}Login{{/link-to}}<span class="nt">&lt;/li&gt;</span>
 {{else}}
-<span class="nt">&lt;li&gt;</span>{{#link-to &quot;logout&quot;}}Logout{{/link-to}}<span class="nt">&lt;/li&gt;</span>
+  <span class="nt">&lt;li&gt;</span>{{#link-to &quot;logout&quot;}}Logout{{/link-to}}<span class="nt">&lt;/li&gt;</span>
 {{/if}}
 <span class="nt">&lt;/ul&gt;</span></code></pre></div>
 
