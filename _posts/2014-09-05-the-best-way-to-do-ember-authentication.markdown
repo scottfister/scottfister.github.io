@@ -30,6 +30,7 @@ The general consensus on authentication seems to be including a token in request
 A basic ([Bootstrap][get-bootstrap]) `login.hbs` template may look like this:
 
 {% highlight html %}
+// templates/login.hbs
 {% raw %}
 <form {{action signIn on="submit"}}>
 {% endraw %}
@@ -54,6 +55,7 @@ A basic ([Bootstrap][get-bootstrap]) `login.hbs` template may look like this:
 Create a controller named `login.js` with a `signIn` action:
 
 {% highlight javascript %}
+// controllers/login.js
 import Ember from "ember";
 
 export default Ember.Route.extend({
@@ -89,6 +91,7 @@ Create an [initializer][ember-initializer] in `initializers/session.js`. We will
 Install Basil.js using Bower with `bower install basil.js --save-dev`
 
 {% highlight javascript %}
+// initializers/session.js
 import Ember from "ember";
 
 export default {
@@ -165,6 +168,7 @@ module.exports = app.toTree();
 Let's go back and modify our `login.js` to persist the data using the Session object:
 
 {% highlight javascript %}
+// controllers/login.js
 import Ember from "ember";
 
 export default Ember.Route.extend({
@@ -331,6 +335,7 @@ You can replace `that.transitionTo('index')` with whatever you want the default 
 If you'd like to display relevant errors to your users attemping login, modify the login controller by adding `that.set('error', error.responseJSON.error);` within the `fail` block. Then in your `login.hbs` template you can display them:
 
 {% highlight html %}
+// templates/login.hbs
 {% raw %}
 {{#if error}}
   <div class="alert alert-danger">{{error}}</div>
