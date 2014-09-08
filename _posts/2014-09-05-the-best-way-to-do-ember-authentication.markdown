@@ -315,6 +315,7 @@ Now we'd like to show a login link to unauthenticated users and logout for authe
 If you've implemented the mixin as I have above, when a user attempts to access a protected route it will redirect them to the login page instead and store the `attemptedTransition` on the Session object. After a successful sign-in we can use this to redirect them to the page they were attempting. Add the following snippet in your login controller below where we persist the data:
 
 {% highlight javascript %}
+// controllers/login.js
 ...
 that.set('session.authToken', data.user_token);
 that.set('session.userId', data.user_id);
