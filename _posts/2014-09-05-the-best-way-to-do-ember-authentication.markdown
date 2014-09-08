@@ -135,7 +135,7 @@ export default {
 };
 {% endhighlight %}
 
-Yeah a lot happened there, and I wouldn't be surprised if a lot of that looks foreign to you. Lets break it down.
+Yeah a lot happened there, and don't be intimidated if a lot of that looks foreign to you. Lets break it down.
 
 In the `init` method we call `this_super()` as is recommended for Object creation in Ember. Then set the properties `userId` and `authToken` to the values that Basil reads (if any). The [Ember.run.once][ember-run-once] is explained in the comment above it.
 

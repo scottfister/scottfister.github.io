@@ -6,8 +6,8 @@
 </description>
     <link>http://scottfister.github.io/</link>
     <atom:link href="http://scottfister.github.io/feed.xml" rel="self" type="application/rss+xml" />
-    <pubDate>Sun, 07 Sep 2014 17:57:14 -0700</pubDate>
-    <lastBuildDate>Sun, 07 Sep 2014 17:57:14 -0700</lastBuildDate>
+    <pubDate>Sun, 07 Sep 2014 18:02:29 -0700</pubDate>
+    <lastBuildDate>Sun, 07 Sep 2014 18:02:29 -0700</lastBuildDate>
     <generator>Jekyll v2.3.0</generator>
     
       <item>
@@ -143,7 +143,7 @@
   &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
 &lt;span class=&quot;p&quot;&gt;};&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
 
-&lt;p&gt;Yeah a lot happened there, and I wouldn’t be surprised if a lot of that looks foreign to you. Lets break it down.&lt;/p&gt;
+&lt;p&gt;Yeah a lot happened there, and don’t be intimidated if a lot of that looks foreign to you. Lets break it down.&lt;/p&gt;
 
 &lt;p&gt;In the &lt;code&gt;init&lt;/code&gt; method we call &lt;code&gt;this_super()&lt;/code&gt; as is recommended for Object creation in Ember. Then set the properties &lt;code&gt;userId&lt;/code&gt; and &lt;code&gt;authToken&lt;/code&gt; to the values that Basil reads (if any). The &lt;a href=&quot;http://emberjs.com/api/classes/Ember.run.html#method_once&quot;&gt;Ember.run.once&lt;/a&gt; is explained in the comment above it.&lt;/p&gt;
 
