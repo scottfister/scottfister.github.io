@@ -21,7 +21,8 @@ I will be writing this guide for [Ember CLI][ember-cli] - which you really shoul
 
 1. Login and Logout controllers to authenticate with your backend
 2. A "Session" object that handles state and persistance
-3. A [mixin][ember-mixins] that can be included in controllers that require a valid session
+3. An Adapter to include the token in request headers
+4. A [mixin][ember-mixins] that can be included in controllers that require a valid session
 
 # Authenticating with the backend server
 The general consensus on authentication seems to be including a token in request headers. This token is retrieved by the client supplying a valid username/password combination to the server.
@@ -76,14 +77,14 @@ export default Ember.Route.extend({
 });
 {% endhighlight %}
 
-Replace the login path with your server, if it's on the same path (such as if Ember is part of a Rails app) then you can omit the base url.
+Replace the login path with your server, if it's on the same domain (such as if Ember is part of a Rails app) then you can omit the base url.
 
 Now if you enter credentials into the login form, you should see success and error messages as appropriate. This is great, but now we need a way to persist the token and have Ember made aware that the user is now authenticated. Enter the Session object.
 
 # The Session object
 Create an [initializer][ember-initializer] in `initializers/session.js`. We will create our Session object here and initialize it using any stored values.
 
-> Note that I've chosen to use the [Basil.js][basil-js] library which describes itself as "The missing Javascript smart persistence layer. Unified localstorage, cookie and session storage JavaScript API". You could opt to use regular [HTML5 localstorage][local-storage] on its own if you'd prefer.
+> Note that I've chosen to use the [Basil.js][basil-js] library which describes itself as "The missing Javascript smart persistence layer. Unified localstorage, cookie and session storage JavaScript API". You could opt to use regular [HTML5 localstorage][local-storage] or cookies on their own if you'd prefer.
 
 Install Basil.js using Bower with `bower install basil.js --save-dev`
 
@@ -189,7 +190,7 @@ export default Ember.Route.extend({
 });
 {% endhighlight %}
 
-Of course, your server may return different JSON so modify as appropriate. Now if you try logging in, you can use the Chrome developer tools under "resources" and "Local Storage" to see the data persisted from your server!
+Of course, your server may return different JSON so modify as appropriate. Now if you try logging in, you can use the Chrome developer tools under "Resources" and "Local Storage" to see the data persisted from your server!
 
 # Sending token with headers
 It's straight-forward to send the token allow with any requests we make to the server now:
@@ -221,7 +222,7 @@ This [mixin][ember-mixins] allows you to protect certain routes within your appl
 Create a mixin named `mixins/protected-route.js` and paste the following:
 
 {% highlight javascript %}
-//mixins/protected-route.js
+// mixins/protected-route.js
 import Ember from "ember";
 
 export default Ember.Mixin.create({
@@ -306,6 +307,24 @@ Now we'd like to show a login link to unauthenticated users and logout for authe
 </ul>
 {% endhighlight %}
 
+# Good UX: Taking the user to the route they attempted
+If you've implemented the mixin as I have above, when a user attempts to access a protected route it will redirect them to the login page instead and store the `attemptedTransition` on the Session object. We can use this to redirect them to the page they were attempting, after a successful sign in. Add the following snippet in your login controller below where we persist the data:
+
+{% highlight javascript %}
+...
+that.set('session.authToken', data.user_token);
+that.set('session.userId', data.user_id);
+
+var attemptedTransition = that.get('session.attemptedTransition');
+if (attemptedTransition) {
+  attemptedTransition.retry();
+  that.set('session.attemptedTransition', null);
+} else {
+  that.transitionTo('campaigns');
+}
+...
+{% endhighlight %}
+
 # Optional: Error handling on login
 If you'd like to display relevant errors to your users attemping login, modify the login controller by adding `that.set('error', error.responseJSON.error);` within the `fail` block. Then in your `login.hbs` template you can display them:
 
@@ -316,6 +335,7 @@ If you'd like to display relevant errors to your users attemping login, modify t
 {{/if}}
 {% endraw %}
 {% endhighlight %}
+
 # Finishing up
 Whilst there is certainly more code written out compared to using an external library, this is using the latest (at time of writing) Ember conventions, and you have complete control without needing to hack anything.
 

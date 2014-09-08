@@ -6,8 +6,8 @@
 </description>
     <link>http://scottfister.github.io/</link>
     <atom:link href="http://scottfister.github.io/feed.xml" rel="self" type="application/rss+xml" />
-    <pubDate>Sun, 07 Sep 2014 17:05:52 -0700</pubDate>
-    <lastBuildDate>Sun, 07 Sep 2014 17:05:52 -0700</lastBuildDate>
+    <pubDate>Sun, 07 Sep 2014 17:30:50 -0700</pubDate>
+    <lastBuildDate>Sun, 07 Sep 2014 17:30:50 -0700</lastBuildDate>
     <generator>Jekyll v2.3.0</generator>
     
       <item>
@@ -31,6 +31,7 @@
 &lt;ol&gt;
   &lt;li&gt;Login and Logout controllers to authenticate with your backend&lt;/li&gt;
   &lt;li&gt;A “Session” object that handles state and persistance&lt;/li&gt;
+  &lt;li&gt;An Adapter to include the token in request headers&lt;/li&gt;
   &lt;li&gt;A &lt;a href=&quot;http://emberjs.com/api/classes/Ember.Mixin.html&quot;&gt;mixin&lt;/a&gt; that can be included in controllers that require a valid session&lt;/li&gt;
 &lt;/ol&gt;
 
@@ -84,7 +85,7 @@
   &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
 &lt;span class=&quot;p&quot;&gt;});&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
 
-&lt;p&gt;Replace the login path with your server, if it’s on the same path (such as if Ember is part of a Rails app) then you can omit the base url.&lt;/p&gt;
+&lt;p&gt;Replace the login path with your server, if it’s on the same domain (such as if Ember is part of a Rails app) then you can omit the base url.&lt;/p&gt;
 
 &lt;p&gt;Now if you enter credentials into the login form, you should see success and error messages as appropriate. This is great, but now we need a way to persist the token and have Ember made aware that the user is now authenticated. Enter the Session object.&lt;/p&gt;
 
@@ -92,7 +93,7 @@
 &lt;p&gt;Create an &lt;a href=&quot;http://emberjs.com/api/classes/Ember.Application.html#toc_initializers&quot;&gt;initializer&lt;/a&gt; in &lt;code&gt;initializers/session.js&lt;/code&gt;. We will create our Session object here and initialize it using any stored values.&lt;/p&gt;
 
 &lt;blockquote&gt;
-  &lt;p&gt;Note that I’ve chosen to use the &lt;a href=&quot;http://wisembly.github.io/basil.js/&quot;&gt;Basil.js&lt;/a&gt; library which describes itself as “The missing Javascript smart persistence layer. Unified localstorage, cookie and session storage JavaScript API”. You could opt to use regular &lt;a href=&quot;https://developer.mozilla.org/en-US/docs/Web/Guide/API/DOM/Storage#localStorage&quot;&gt;HTML5 localstorage&lt;/a&gt; on its own if you’d prefer.&lt;/p&gt;
+  &lt;p&gt;Note that I’ve chosen to use the &lt;a href=&quot;http://wisembly.github.io/basil.js/&quot;&gt;Basil.js&lt;/a&gt; library which describes itself as “The missing Javascript smart persistence layer. Unified localstorage, cookie and session storage JavaScript API”. You could opt to use regular &lt;a href=&quot;https://developer.mozilla.org/en-US/docs/Web/Guide/API/DOM/Storage#localStorage&quot;&gt;HTML5 localstorage&lt;/a&gt; or cookies on their own if you’d prefer.&lt;/p&gt;
 &lt;/blockquote&gt;
 
 &lt;p&gt;Install Basil.js using Bower with &lt;code&gt;bower install basil.js --save-dev&lt;/code&gt;&lt;/p&gt;
@@ -195,7 +196,7 @@
   &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
 &lt;span class=&quot;p&quot;&gt;});&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
 
-&lt;p&gt;Of course, your server may return different JSON so modify as appropriate. Now if you try logging in, you can use the Chrome developer tools under “resources” and “Local Storage” to see the data persisted from your server!&lt;/p&gt;
+&lt;p&gt;Of course, your server may return different JSON so modify as appropriate. Now if you try logging in, you can use the Chrome developer tools under “Resources” and “Local Storage” to see the data persisted from your server!&lt;/p&gt;
 
 &lt;h1 id=&quot;sending-token-with-headers&quot;&gt;Sending token with headers&lt;/h1&gt;
 &lt;p&gt;It’s straight-forward to send the token allow with any requests we make to the server now:&lt;/p&gt;
@@ -224,7 +225,7 @@
 
 &lt;p&gt;Create a mixin named &lt;code&gt;mixins/protected-route.js&lt;/code&gt; and paste the following:&lt;/p&gt;
 
-&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-javascript&quot; data-lang=&quot;javascript&quot;&gt;&lt;span class=&quot;c1&quot;&gt;//mixins/protected-route.js&lt;/span&gt;
+&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-javascript&quot; data-lang=&quot;javascript&quot;&gt;&lt;span class=&quot;c1&quot;&gt;// mixins/protected-route.js&lt;/span&gt;
 &lt;span class=&quot;kr&quot;&gt;import&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;Ember&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;from&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&amp;quot;ember&amp;quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
 
 &lt;span class=&quot;kr&quot;&gt;export&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;default&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;Ember&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;Mixin&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;create&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;({&lt;/span&gt;
@@ -303,6 +304,22 @@
 &lt;span class=&quot;nt&quot;&gt;&amp;lt;li&amp;gt;&lt;/span&gt;{{#link-to &amp;quot;logout&amp;quot;}}Logout{{/link-to}}&lt;span class=&quot;nt&quot;&gt;&amp;lt;/li&amp;gt;&lt;/span&gt;
 {{/if}}
 &lt;span class=&quot;nt&quot;&gt;&amp;lt;/ul&amp;gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+
+&lt;h1 id=&quot;good-ux-taking-the-user-to-the-route-they-attempted&quot;&gt;Good UX: Taking the user to the route they attempted&lt;/h1&gt;
+&lt;p&gt;If you’ve implemented the mixin as I have above, when a user attempts to access a protected route it will redirect them to the login page instead and store the &lt;code&gt;attemptedTransition&lt;/code&gt; on the Session object. We can use this to redirect them to the page they were attempting, after a successful sign in. Add the following snippet in your login controller below where we persist the data:&lt;/p&gt;
+
+&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-javascript&quot; data-lang=&quot;javascript&quot;&gt;&lt;span class=&quot;p&quot;&gt;...&lt;/span&gt;
+&lt;span class=&quot;nx&quot;&gt;that&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;set&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;&amp;#39;session.authToken&amp;#39;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;data&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;user_token&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
+&lt;span class=&quot;nx&quot;&gt;that&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;set&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;&amp;#39;session.userId&amp;#39;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;data&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;user_id&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
+
+&lt;span class=&quot;kd&quot;&gt;var&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;attemptedTransition&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;that&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;get&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;&amp;#39;session.attemptedTransition&amp;#39;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
+&lt;span class=&quot;k&quot;&gt;if&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;attemptedTransition&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+  &lt;span class=&quot;nx&quot;&gt;attemptedTransition&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;retry&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;();&lt;/span&gt;
+  &lt;span class=&quot;nx&quot;&gt;that&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;set&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;&amp;#39;session.attemptedTransition&amp;#39;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;kc&quot;&gt;null&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;else&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+  &lt;span class=&quot;nx&quot;&gt;that&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;transitionTo&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;&amp;#39;campaigns&amp;#39;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;...&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
 
 &lt;h1 id=&quot;optional-error-handling-on-login&quot;&gt;Optional: Error handling on login&lt;/h1&gt;
 &lt;p&gt;If you’d like to display relevant errors to your users attemping login, modify the login controller by adding &lt;code&gt;that.set(&#39;error&#39;, error.responseJSON.error);&lt;/code&gt; within the &lt;code&gt;fail&lt;/code&gt; block. Then in your &lt;code&gt;login.hbs&lt;/code&gt; template you can display them:&lt;/p&gt;
