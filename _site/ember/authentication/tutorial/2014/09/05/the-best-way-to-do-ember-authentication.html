@@ -1,0 +1,441 @@
+<!DOCTYPE html>
+<html>
+
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+
+    <title>The Best Way To Do Ember Authentication</title>
+    <meta name="description" content="Write an awesome description for your new site here. You can edit this line in _config.yml. It will appear in your document head meta (for Google search results) and in your feed.xml site description.
+">
+
+    <link rel="stylesheet" href="/css/main.css">
+    <link rel="canonical" href="http://scottfister.github.io/ember/authentication/tutorial/2014/09/05/the-best-way-to-do-ember-authentication.html">
+</head>
+
+
+  <body>
+
+    <header class="site-header">
+
+  <div class="wrapper">
+
+    <a class="site-title" href="/">Fist Your Way To Good Code</a>
+
+    <nav class="site-nav">
+      <a href="#" class="menu-icon">
+        <svg viewBox="0 0 18 15">
+          <path fill="#424242" d="M18,1.484c0,0.82-0.665,1.484-1.484,1.484H1.484C0.665,2.969,0,2.304,0,1.484l0,0C0,0.665,0.665,0,1.484,0 h15.031C17.335,0,18,0.665,18,1.484L18,1.484z"/>
+          <path fill="#424242" d="M18,7.516C18,8.335,17.335,9,16.516,9H1.484C0.665,9,0,8.335,0,7.516l0,0c0-0.82,0.665-1.484,1.484-1.484 h15.031C17.335,6.031,18,6.696,18,7.516L18,7.516z"/>
+          <path fill="#424242" d="M18,13.516C18,14.335,17.335,15,16.516,15H1.484C0.665,15,0,14.335,0,13.516l0,0 c0-0.82,0.665-1.484,1.484-1.484h15.031C17.335,12.031,18,12.696,18,13.516L18,13.516z"/>
+        </svg>
+      </a>
+
+      <div class="trigger">
+        
+          
+          <a class="page-link" href="/about/">About</a>
+          
+        
+          
+        
+          
+        
+          
+        
+      </div>
+    </nav>
+
+  </div>
+
+</header>
+
+
+    <div class="page-content">
+      <div class="wrapper">
+        <div class="post">
+
+  <header class="post-header">
+    <h1 class="post-title">The Best Way To Do Ember Authentication</h1>
+    <p class="post-meta">Sep 5, 2014</p>
+  </header>
+
+  <article class="post-content">
+    <p>When I began researching how to implement user authentication in my Ember application, I found there are three options available:</p>
+
+<ol>
+  <li><a href="https://github.com/simplabs/ember-simple-auth">Ember Simple Auth</a></li>
+  <li><a href="http://ember-auth.herokuapp.com/docs">Ember Auth</a></li>
+  <li>Roll your own</li>
+</ol>
+
+<p>Typically, I’ve always been a proponent of the “don’t reinvent the wheel” philosophy; in other words, using existing tried and true frameworks to achieve my goals.</p>
+
+<p>However, after spending 2 days attempting to integrate both Ember Simple Auth and Ember Auth unsuccessfully, I decided to try my hand at rolling my own. Not only is it <em>surprisingly simple</em>, but I am enjoying the freedom from dependancy on a module that - at any time - could become unsupported or broken with the (<a href="http://emberjs.com/blog/2013/09/06/new-ember-release-process.html">very frequent</a>) updates to Ember.</p>
+
+<p>I will be writing this guide for <a href="http://www.ember-cli.com/">Ember CLI</a> - which you really should be using for your project. If you cannot for whatever reason, and have trouble translating it to vanilla Ember, comment below and I’ll help. I originally built this in non-Ember CLI.</p>
+
+<p><strong>A quick breakdown of what we’ll be creating:</strong></p>
+
+<ol>
+  <li>Login and Logout controllers to authenticate with your backend</li>
+  <li>A “Session” object that handles state and persistance</li>
+  <li>A <a href="http://emberjs.com/api/classes/Ember.Mixin.html">mixin</a> that can be included in controllers that require a valid session</li>
+</ol>
+
+<h1 id="authenticating-with-the-backend-server">Authenticating with the backend server</h1>
+<p>The general consensus on authentication seems to be including a token in request headers. This token is retrieved by the client supplying a valid username/password combination to the server.</p>
+
+<p>A basic (<a href="http://getbootstrap.com/">Bootstrap</a>) <code>login.hbs</code> template may look like so:</p>
+
+<div class="highlight"><pre><code class="language-html" data-lang="html"><span class="nt">&lt;form</span> <span class="err">{{</span><span class="na">action</span> <span class="na">signIn</span> <span class="na">on=</span><span class="s">&quot;submit&quot;</span><span class="err">}}</span><span class="nt">&gt;</span>
+
+  <span class="nt">&lt;div</span> <span class="na">class=</span><span class="s">&quot;form-group&quot;</span><span class="nt">&gt;</span>
+    <span class="nt">&lt;label</span> <span class="na">class=</span><span class="s">&quot;control-label&quot;</span><span class="nt">&gt;</span>Email<span class="nt">&lt;/label&gt;</span>
+    {{input value=email class=&quot;form-control&quot;}}
+  <span class="nt">&lt;/div&gt;</span>
+
+  <span class="nt">&lt;div</span> <span class="na">class=</span><span class="s">&quot;form-group&quot;</span><span class="nt">&gt;</span>
+    <span class="nt">&lt;label</span> <span class="na">class=</span><span class="s">&quot;control-label&quot;</span><span class="nt">&gt;</span>Password<span class="nt">&lt;/label&gt;</span>
+    {{input value=password type=&quot;password&quot; class=&quot;form-control&quot;}}
+  <span class="nt">&lt;/div&gt;</span>
+
+  <span class="nt">&lt;div</span> <span class="na">class=</span><span class="s">&quot;form-group&quot;</span><span class="nt">&gt;</span>
+    <span class="nt">&lt;button</span> <span class="na">type=</span><span class="s">&quot;submit&quot;</span> <span class="na">class=</span><span class="s">&quot;btn btn-success&quot;</span><span class="nt">&gt;</span>Login<span class="nt">&lt;/button&gt;</span>
+  <span class="nt">&lt;/div&gt;</span>
+<span class="nt">&lt;/form&gt;</span></code></pre></div>
+
+<blockquote>
+  <p>You may notice the action is in the form with an “on” event of “submit” as opposed to having the action directly on the button. This is best practice and supports behaviour like the user pressing enter to have the form submit.</p>
+</blockquote>
+
+<p>Create a controller named <code>login.js</code> with a <code>signIn</code> action:</p>
+
+<div class="highlight"><pre><code class="language-javascript" data-lang="javascript"><span class="kr">import</span> <span class="nx">Ember</span> <span class="nx">from</span> <span class="s2">&quot;ember&quot;</span><span class="p">;</span>
+
+<span class="kr">export</span> <span class="k">default</span> <span class="nx">Ember</span><span class="p">.</span><span class="nx">Route</span><span class="p">.</span><span class="nx">extend</span><span class="p">({</span>
+  <span class="nx">actions</span><span class="o">:</span> <span class="p">{</span>
+    <span class="nx">signIn</span><span class="o">:</span> <span class="kd">function</span><span class="p">()</span> <span class="p">{</span>
+      <span class="kd">var</span> <span class="nx">that</span> <span class="o">=</span> <span class="k">this</span><span class="p">;</span>
+
+      <span class="k">return</span> <span class="nx">Ember</span><span class="p">.</span><span class="nx">$</span><span class="p">.</span><span class="nx">post</span><span class="p">(</span><span class="s2">&quot;http://0.0.0.0:5000/v1/users/sign_in&quot;</span><span class="p">,</span>
+      <span class="p">{</span>
+        <span class="nx">user</span><span class="o">:</span> <span class="p">{</span>
+          <span class="nx">email</span><span class="o">:</span> <span class="nx">that</span><span class="p">.</span><span class="nx">get</span><span class="p">(</span><span class="s1">&#39;email&#39;</span><span class="p">),</span>
+          <span class="nx">password</span><span class="o">:</span> <span class="nx">that</span><span class="p">.</span><span class="nx">get</span><span class="p">(</span><span class="s1">&#39;password&#39;</span><span class="p">)</span>
+        <span class="p">}</span>
+      <span class="p">}).</span><span class="nx">then</span><span class="p">(</span><span class="kd">function</span><span class="p">(</span><span class="nx">data</span><span class="p">)</span> <span class="p">{</span>
+        <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="s1">&#39;Success&#39;</span><span class="p">,</span> <span class="nx">data</span><span class="p">);</span>
+      <span class="p">}).</span><span class="nx">fail</span><span class="p">(</span><span class="kd">function</span><span class="p">(</span><span class="nx">error</span><span class="p">)</span> <span class="p">{</span>
+        <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="s1">&#39;Error&#39;</span><span class="p">,</span> <span class="nx">error</span><span class="p">);</span>
+      <span class="p">});</span>
+    <span class="p">}</span>
+  <span class="p">}</span>
+<span class="p">});</span></code></pre></div>
+
+<p>Replace the login path with your server, if it’s on the same path (such as if Ember is part of a Rails app) then you can omit the base url.</p>
+
+<p>Now if you enter credentials into the login form, you should see success and error messages as appropriate. This is great, but now we need a way to persist the token and have Ember made aware that the user is now authenticated. Enter the Session object.</p>
+
+<h1 id="the-session-object">The Session object</h1>
+<p>Create an <a href="http://emberjs.com/api/classes/Ember.Application.html#toc_initializers">initializer</a> in <code>initializers/session.js</code>. We will create our Session object here and initialize it using any stored values.</p>
+
+<blockquote>
+  <p>Note that I’ve chosen to use the <a href="http://wisembly.github.io/basil.js/">Basil.js</a> library which describes itself as “The missing Javascript smart persistence layer. Unified localstorage, cookie and session storage JavaScript API”. You could opt to use regular <a href="https://developer.mozilla.org/en-US/docs/Web/Guide/API/DOM/Storage#localStorage">HTML5 localstorage</a> on its own if you’d prefer.</p>
+</blockquote>
+
+<p>Install Basil.js using Bower with <code>bower install basil.js --save-dev</code></p>
+
+<div class="highlight"><pre><code class="language-javascript" data-lang="javascript"><span class="kr">import</span> <span class="nx">Ember</span> <span class="nx">from</span> <span class="s2">&quot;ember&quot;</span><span class="p">;</span>
+
+<span class="kr">export</span> <span class="k">default</span> <span class="p">{</span>
+  <span class="nx">name</span><span class="o">:</span> <span class="s1">&#39;session&#39;</span><span class="p">,</span>
+
+  <span class="nx">initialize</span><span class="o">:</span> <span class="kd">function</span><span class="p">(</span><span class="nx">container</span><span class="p">,</span> <span class="nx">application</span><span class="p">)</span> <span class="p">{</span>
+
+    <span class="kd">var</span> <span class="nx">Session</span> <span class="o">=</span> <span class="nx">Ember</span><span class="p">.</span><span class="nb">Object</span><span class="p">.</span><span class="nx">extend</span><span class="p">({</span>
+      <span class="nx">init</span><span class="o">:</span> <span class="kd">function</span><span class="p">()</span> <span class="p">{</span>
+
+        <span class="kd">var</span> <span class="nx">userId</span> <span class="o">=</span> <span class="nx">basil</span><span class="p">.</span><span class="nx">get</span><span class="p">(</span><span class="s1">&#39;user_id&#39;</span><span class="p">);</span>
+        <span class="k">this</span><span class="p">.</span><span class="nx">set</span><span class="p">(</span><span class="s1">&#39;userId&#39;</span><span class="p">,</span> <span class="nx">userId</span><span class="p">);</span>
+        <span class="k">this</span><span class="p">.</span><span class="nx">set</span><span class="p">(</span><span class="s1">&#39;authToken&#39;</span><span class="p">,</span> <span class="nx">basil</span><span class="p">.</span><span class="nx">get</span><span class="p">(</span><span class="s1">&#39;auth_token&#39;</span><span class="p">));</span>
+        <span class="c1">// We use run once to run this in the next loop, this prevents issues</span>
+        <span class="c1">// where the object has not been created fully but property bindings</span>
+        <span class="c1">// are fired and cause an error</span>
+        <span class="nx">Ember</span><span class="p">.</span><span class="nx">run</span><span class="p">.</span><span class="nx">once</span><span class="p">(</span><span class="k">this</span><span class="p">,</span> <span class="s1">&#39;userIdChanged&#39;</span><span class="p">);</span>
+      <span class="p">},</span>
+
+      <span class="nx">authTokenChanged</span><span class="o">:</span> <span class="kd">function</span><span class="p">()</span> <span class="p">{</span>
+        <span class="nx">basil</span><span class="p">.</span><span class="nx">set</span><span class="p">(</span><span class="s1">&#39;auth_token&#39;</span><span class="p">,</span> <span class="k">this</span><span class="p">.</span><span class="nx">get</span><span class="p">(</span><span class="s1">&#39;authToken&#39;</span><span class="p">));</span>
+      <span class="p">}.</span><span class="nx">observes</span><span class="p">(</span><span class="s1">&#39;authToken&#39;</span><span class="p">),</span>
+
+      <span class="nx">userIdChanged</span><span class="o">:</span> <span class="kd">function</span><span class="p">()</span> <span class="p">{</span>
+        <span class="kd">var</span> <span class="nx">userId</span> <span class="o">=</span> <span class="k">this</span><span class="p">.</span><span class="nx">get</span><span class="p">(</span><span class="s1">&#39;userId&#39;</span><span class="p">);</span>
+        <span class="nx">basil</span><span class="p">.</span><span class="nx">set</span><span class="p">(</span><span class="s1">&#39;user_id&#39;</span><span class="p">,</span> <span class="nx">userId</span><span class="p">);</span>
+        <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="nx">Ember</span><span class="p">.</span><span class="nx">isEmpty</span><span class="p">(</span><span class="nx">userId</span><span class="p">))</span> <span class="p">{</span>
+          <span class="k">this</span><span class="p">.</span><span class="nx">set</span><span class="p">(</span><span class="s1">&#39;user&#39;</span><span class="p">,</span> <span class="nx">container</span><span class="p">.</span><span class="nx">lookup</span><span class="p">(</span><span class="s1">&#39;store:main&#39;</span><span class="p">).</span><span class="nx">find</span><span class="p">(</span><span class="s1">&#39;user&#39;</span><span class="p">,</span> <span class="nx">userId</span><span class="p">));</span>
+        <span class="p">}</span>
+      <span class="p">}.</span><span class="nx">observes</span><span class="p">(</span><span class="s1">&#39;userId&#39;</span><span class="p">),</span>
+
+      <span class="nx">signedIn</span><span class="o">:</span> <span class="kd">function</span><span class="p">()</span> <span class="p">{</span>
+        <span class="k">return</span> <span class="o">!!</span><span class="k">this</span><span class="p">.</span><span class="nx">get</span><span class="p">(</span><span class="s1">&#39;authToken&#39;</span><span class="p">);</span>
+      <span class="p">}.</span><span class="nx">property</span><span class="p">(</span><span class="s1">&#39;authToken&#39;</span><span class="p">)</span>
+
+    <span class="p">});</span>
+
+    <span class="nx">application</span><span class="p">.</span><span class="nx">register</span><span class="p">(</span><span class="s1">&#39;session:main&#39;</span><span class="p">,</span> <span class="nx">Session</span><span class="p">);</span>
+
+    <span class="nx">application</span><span class="p">.</span><span class="nx">inject</span><span class="p">(</span><span class="s1">&#39;controller&#39;</span><span class="p">,</span> <span class="s1">&#39;session&#39;</span><span class="p">,</span> <span class="s1">&#39;session:main&#39;</span><span class="p">);</span>
+    <span class="nx">application</span><span class="p">.</span><span class="nx">inject</span><span class="p">(</span><span class="s1">&#39;route&#39;</span><span class="p">,</span> <span class="s1">&#39;session&#39;</span><span class="p">,</span> <span class="s1">&#39;session:main&#39;</span><span class="p">);</span>
+    <span class="nx">application</span><span class="p">.</span><span class="nx">inject</span><span class="p">(</span><span class="s1">&#39;adapter&#39;</span><span class="p">,</span> <span class="s1">&#39;session&#39;</span><span class="p">,</span> <span class="s1">&#39;session:main&#39;</span><span class="p">);</span>
+  <span class="p">}</span>
+<span class="p">};</span></code></pre></div>
+
+<p>Yeah a lot happened there, and I wouldn’t be surprised if a lot of that looks foreign to you. Lets break it down.</p>
+
+<p>In the <code>init</code> method we call <code>this_super()</code> as is recommended for Object creation in Ember. Then set the properties <code>userId</code> and <code>authToken</code> to the values that Basil reads (if any). The <a href="http://emberjs.com/api/classes/Ember.run.html#method_once">Ember.run.once</a> is explained in the comment above it.</p>
+
+<blockquote>
+  <p>Note that a userId may be irrelevant to your application; all you need to make auth work is a token. However for completeness I’ll be showing how to have this working with a User model also.</p>
+</blockquote>
+
+<p><code>authTokenChanged</code> is an <a href="http://emberjs.com/guides/object-model/observers/">observer</a> that simply persists the <code>token</code> value any time it changes on the Session object.</p>
+
+<p><code>userIdChanged</code> does the same for <code>user_id</code>, however it also does a store lookup on the ID and sets the <code>user</code> property.</p>
+
+<p><code>signedIn</code> simply returns a boolean of whether the <code>token</code> exists or not - we can use this in views and controllers to check if authenticated.</p>
+
+<p>This last part is one of the most exciting parts I learnt whilst building this: we register our Session object as what Ember calls a <code>factory</code> which enables us to <a href="http://emberjs.com/api/classes/Ember.Application.html#method_inject">inject</a> it into our controllers, routes, or adapters. This means that instead of having to set our Session object as a global variable like <code>App.Session</code> (which is not allowed in Ember CLI anyway), we can instead access it via <code>this.get('session')</code> in adapters, controllers and routes. This will be shown more below, but suffice to say it’s really powerful, and you can go so far as to only inject it into specific places.</p>
+
+<h4 id="making-libraries-accessible-globally">Making libraries accessible globally</h4>
+<p>Whilst this needn’t be explicitly covered in this guide, I tripped up on it myself, so I want to cover it briefly. In Ember CLI in order to <a href="http://www.ember-cli.com/#managing-dependencies">access libraries globally</a> like we have above (you’ll notice Basil has no import statement), you need to declare it within your <code>Brocfile.js</code> like this:</p>
+
+<div class="highlight"><pre><code class="language-javascript" data-lang="javascript"><span class="c1">// Brocfile.js</span>
+<span class="kd">var</span> <span class="nx">EmberApp</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="s1">&#39;ember-cli/lib/broccoli/ember-app&#39;</span><span class="p">);</span>
+<span class="p">...</span>
+<span class="nx">app</span><span class="p">.</span><span class="kr">import</span><span class="p">(</span><span class="s1">&#39;vendor/basil.js/build/basil.js&#39;</span><span class="p">);</span>
+
+<span class="nx">module</span><span class="p">.</span><span class="nx">exports</span> <span class="o">=</span> <span class="nx">app</span><span class="p">.</span><span class="nx">toTree</span><span class="p">();</span></code></pre></div>
+
+<h1 id="persisting-the-data">Persisting the data</h1>
+<p>Let’s go back and modify our <code>login.js</code> to persist the data using the Session object:</p>
+
+<div class="highlight"><pre><code class="language-javascript" data-lang="javascript"><span class="kr">import</span> <span class="nx">Ember</span> <span class="nx">from</span> <span class="s2">&quot;ember&quot;</span><span class="p">;</span>
+
+<span class="kr">export</span> <span class="k">default</span> <span class="nx">Ember</span><span class="p">.</span><span class="nx">Route</span><span class="p">.</span><span class="nx">extend</span><span class="p">({</span>
+  <span class="nx">actions</span><span class="o">:</span> <span class="p">{</span>
+    <span class="nx">signIn</span><span class="o">:</span> <span class="kd">function</span><span class="p">()</span> <span class="p">{</span>
+      <span class="kd">var</span> <span class="nx">that</span> <span class="o">=</span> <span class="k">this</span><span class="p">;</span>
+
+      <span class="k">return</span> <span class="nx">Ember</span><span class="p">.</span><span class="nx">$</span><span class="p">.</span><span class="nx">post</span><span class="p">(</span><span class="s2">&quot;http://0.0.0.0/sign_in&quot;</span><span class="p">,</span>
+      <span class="p">{</span>
+        <span class="nx">user</span><span class="o">:</span> <span class="p">{</span>
+          <span class="nx">email</span><span class="o">:</span> <span class="nx">that</span><span class="p">.</span><span class="nx">get</span><span class="p">(</span><span class="s1">&#39;email&#39;</span><span class="p">),</span>
+          <span class="nx">password</span><span class="o">:</span> <span class="nx">that</span><span class="p">.</span><span class="nx">get</span><span class="p">(</span><span class="s1">&#39;password&#39;</span><span class="p">)</span>
+        <span class="p">}</span>
+      <span class="p">}).</span><span class="nx">then</span><span class="p">(</span><span class="kd">function</span><span class="p">(</span><span class="nx">data</span><span class="p">)</span> <span class="p">{</span>
+        <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="s1">&#39;Success&#39;</span><span class="p">,</span> <span class="nx">data</span><span class="p">);</span>
+        <span class="nx">that</span><span class="p">.</span><span class="nx">set</span><span class="p">(</span><span class="s1">&#39;session.authToken&#39;</span><span class="p">,</span> <span class="nx">data</span><span class="p">.</span><span class="nx">user_token</span><span class="p">);</span>
+        <span class="nx">that</span><span class="p">.</span><span class="nx">set</span><span class="p">(</span><span class="s1">&#39;session.userId&#39;</span><span class="p">,</span> <span class="nx">data</span><span class="p">.</span><span class="nx">user_id</span><span class="p">);</span>
+      <span class="p">}).</span><span class="nx">fail</span><span class="p">(</span><span class="kd">function</span><span class="p">(</span><span class="nx">error</span><span class="p">)</span> <span class="p">{</span>
+        <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="s1">&#39;Error&#39;</span><span class="p">,</span> <span class="nx">error</span><span class="p">);</span>
+      <span class="p">});</span>
+    <span class="p">}</span>
+  <span class="p">}</span>
+<span class="p">});</span></code></pre></div>
+
+<p>Of course, your server may return different JSON so modify as appropriate. Now if you try logging in, you can use the Chrome developer tools under “resources” and “Local Storage” to see the data persisted from your server!</p>
+
+<h1 id="sending-token-with-headers">Sending token with headers</h1>
+<p>It’s straight-forward to send the token allow with any requests we make to the server now:</p>
+
+<div class="highlight"><pre><code class="language-javascript" data-lang="javascript"><span class="c1">// adapters/application.js</span>
+<span class="kr">import</span> <span class="nx">DS</span> <span class="nx">from</span> <span class="s2">&quot;ember-data&quot;</span><span class="p">;</span>
+
+<span class="kd">var</span> <span class="nx">Adapter</span> <span class="o">=</span> <span class="nx">DS</span><span class="p">.</span><span class="nx">ActiveModelAdapter</span><span class="p">.</span><span class="nx">extend</span><span class="p">();</span>
+
+<span class="nx">Adapter</span><span class="p">.</span><span class="nx">reopen</span><span class="p">({</span>
+  <span class="nx">headers</span><span class="o">:</span> <span class="kd">function</span><span class="p">()</span> <span class="p">{</span>
+    <span class="k">return</span> <span class="p">{</span>
+      <span class="s1">&#39;Authorization&#39;</span><span class="o">:</span> <span class="s1">&#39;Token token=&quot;%@&quot;&#39;</span><span class="p">.</span><span class="nx">fmt</span><span class="p">(</span><span class="k">this</span><span class="p">.</span><span class="nx">get</span><span class="p">(</span><span class="s1">&#39;session.authToken&#39;</span><span class="p">))</span>
+    <span class="p">};</span>
+  <span class="p">}.</span><span class="nx">property</span><span class="p">(</span><span class="s2">&quot;session.authToken&quot;</span><span class="p">),</span>
+
+  <span class="c1">// host: &#39;http://0.0.0.0:5000/v1&#39; this is optional, if your API is on a different domain</span>
+<span class="p">});</span>
+
+<span class="kr">export</span> <span class="k">default</span> <span class="nx">Adapter</span><span class="p">;</span></code></pre></div>
+
+<p>Accessing the Session object is made extremely simple thanks to the fact the Session object is injected into our adapters.</p>
+
+<h1 id="protected-routes-mixin">Protected Routes Mixin</h1>
+<p>This <a href="http://emberjs.com/api/classes/Ember.Mixin.html">mixin</a> allows you to protect certain routes within your application by redirecting if they have not authenticated.</p>
+
+<p>Create a mixin named <code>mixins/protected-route.js</code> and paste the following:</p>
+
+<div class="highlight"><pre><code class="language-javascript" data-lang="javascript"><span class="c1">//mixins/protected-route.js</span>
+<span class="kr">import</span> <span class="nx">Ember</span> <span class="nx">from</span> <span class="s2">&quot;ember&quot;</span><span class="p">;</span>
+
+<span class="kr">export</span> <span class="k">default</span> <span class="nx">Ember</span><span class="p">.</span><span class="nx">Mixin</span><span class="p">.</span><span class="nx">create</span><span class="p">({</span>
+  <span class="nx">beforeModel</span><span class="o">:</span> <span class="kd">function</span><span class="p">(</span><span class="nx">transition</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">if</span> <span class="p">(</span><span class="nx">transition</span><span class="p">.</span><span class="nx">targetName</span> <span class="o">===</span> <span class="s1">&#39;login&#39;</span><span class="p">)</span> <span class="p">{</span>
+      <span class="k">return</span><span class="p">;</span>
+    <span class="p">}</span>
+
+    <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="k">this</span><span class="p">.</span><span class="nx">get</span><span class="p">(</span><span class="s1">&#39;session.signedIn&#39;</span><span class="p">))</span> <span class="p">{</span>
+      <span class="k">this</span><span class="p">.</span><span class="nx">redirectToLogin</span><span class="p">(</span><span class="nx">transition</span><span class="p">);</span>
+    <span class="p">}</span>
+  <span class="p">},</span>
+
+  <span class="nx">redirectToLogin</span><span class="o">:</span> <span class="kd">function</span><span class="p">(</span><span class="nx">transition</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">this</span><span class="p">.</span><span class="nx">set</span><span class="p">(</span><span class="s1">&#39;session.attemptedTransition&#39;</span><span class="p">,</span> <span class="nx">transition</span><span class="p">);</span>
+    <span class="k">this</span><span class="p">.</span><span class="nx">transitionTo</span><span class="p">(</span><span class="s1">&#39;login&#39;</span><span class="p">);</span>
+  <span class="p">}</span>
+<span class="p">});</span></code></pre></div>
+
+<p>We implement the Ember <a href="http://emberjs.com/api/classes/Ember.Route.html#method_beforeModel">beforeModel hook</a> to first check if the route they are attempting to access is the <code>login</code> route, and if so do nothing (prevents infinite redirect). We then check if the user is not signed in, and if so call <code>redirectToLogin</code> passing in the current route they are attempting to access.</p>
+
+<p>The <code>redirectToLogin</code> method sets aforementioned route as a property on our Session object for later use, and transitions them to the <code>login</code> route.</p>
+
+<p>Now simply include this mixin in whichever route you’d like protected. For me, my entire application should be so I placed it within <code>routes/application.js</code> which cascades to all routes:</p>
+
+<div class="highlight"><pre><code class="language-javascript" data-lang="javascript"><span class="c1">// routes/application.js</span>
+<span class="kr">import</span> <span class="nx">Ember</span> <span class="nx">from</span> <span class="s2">&quot;ember&quot;</span><span class="p">;</span>
+<span class="kr">import</span> <span class="nx">ProtectedRoutesMixin</span> <span class="nx">from</span> <span class="s2">&quot;../mixins/protected-routes&quot;</span><span class="p">;</span>
+
+<span class="kr">export</span> <span class="k">default</span> <span class="nx">Ember</span><span class="p">.</span><span class="nx">Route</span><span class="p">.</span><span class="nx">extend</span><span class="p">(</span><span class="nx">ProtectedRoutesMixin</span><span class="p">,</span> <span class="p">{</span>
+  <span class="p">...</span>
+<span class="p">});</span></code></pre></div>
+
+<blockquote>
+  <p>You’ll notice the path to the mixin is relative, this is <a href="http://www.ember-cli.com/#using-modules">recommended</a> as best practice by Ember CLI.</p>
+</blockquote>
+
+<p>Try navigating to a route other than <code>login</code> and you should be redirected - if not ensure there is no <code>token</code> stored by Basil, or continue on to implement the logout functionality.</p>
+
+<h1 id="logout">Logout</h1>
+<p>The logout controller is fairly self explanatory:</p>
+
+<div class="highlight"><pre><code class="language-javascript" data-lang="javascript"><span class="c1">// controllers/logout.js</span>
+<span class="kr">import</span> <span class="nx">Ember</span> <span class="nx">from</span> <span class="s2">&quot;ember&quot;</span><span class="p">;</span>
+
+<span class="kr">export</span> <span class="k">default</span> <span class="nx">Ember</span><span class="p">.</span><span class="nx">Route</span><span class="p">.</span><span class="nx">extend</span><span class="p">({</span>
+  <span class="nx">beforeModel</span><span class="o">:</span> <span class="kd">function</span><span class="p">()</span> <span class="p">{</span>
+    <span class="kd">var</span> <span class="nx">self</span> <span class="o">=</span> <span class="k">this</span><span class="p">;</span>
+    <span class="k">return</span> <span class="nx">Ember</span><span class="p">.</span><span class="nx">$</span><span class="p">.</span><span class="nx">ajax</span><span class="p">({</span>
+      <span class="nx">url</span><span class="o">:</span> <span class="s1">&#39;http://0.0.0.0:5000/v1/users/sign_out&#39;</span><span class="p">,</span>
+      <span class="nx">type</span><span class="o">:</span> <span class="s1">&#39;DELETE&#39;</span><span class="p">,</span>
+      <span class="nx">headers</span><span class="o">:</span> <span class="p">{</span>
+        <span class="s1">&#39;Authorization&#39;</span><span class="o">:</span> <span class="s1">&#39;Token token=&quot;%@&quot;&#39;</span><span class="p">.</span><span class="nx">fmt</span><span class="p">(</span><span class="nx">self</span><span class="p">.</span><span class="nx">get</span><span class="p">(</span><span class="s1">&#39;session.authToken&#39;</span><span class="p">))</span>
+      <span class="p">}</span>
+    <span class="p">}).</span><span class="nx">always</span><span class="p">(</span><span class="kd">function</span><span class="p">(</span><span class="nx">response</span><span class="p">)</span> <span class="p">{</span>
+      <span class="nx">self</span><span class="p">.</span><span class="nx">set</span><span class="p">(</span><span class="s1">&#39;session.authToken&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">);</span>
+      <span class="nx">self</span><span class="p">.</span><span class="nx">set</span><span class="p">(</span><span class="s1">&#39;session.userId&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">);</span>
+      <span class="nx">self</span><span class="p">.</span><span class="nx">set</span><span class="p">(</span><span class="s1">&#39;session.user&#39;</span><span class="p">,</span> <span class="kc">null</span><span class="p">);</span>
+      <span class="nx">self</span><span class="p">.</span><span class="nx">transitionTo</span><span class="p">(</span><span class="s1">&#39;login&#39;</span><span class="p">);</span>
+    <span class="p">});</span>
+  <span class="p">}</span>
+<span class="p">});</span></code></pre></div>
+
+<p>You’ll notice we’re chaining <code>always</code> instead of <code>then</code>, this is because we want the user to be logged out regardless of whether it’s confirmed on the backend or not. This is just good UX.</p>
+
+<p>We’re setting the <code>token</code>, <code>userId</code> and <code>user</code> to null or empty strings so our observes fire and Basil sets them thus.</p>
+
+<h1 id="use-within-templates">Use within templates</h1>
+<p>Now we’d like to show a login link to unauthenticated users and logout for authenticated. Again, this is made extremely simple thanks to the fact the Session object is injected into our controllers:</p>
+
+<div class="highlight"><pre><code class="language-html" data-lang="html">// templates/application.hbs
+<span class="nt">&lt;ul</span> <span class="na">class=</span><span class="s">&quot;nav nav-pills&quot;</span><span class="nt">&gt;</span>
+{{#if session.signedIn}}
+<span class="nt">&lt;li&gt;</span>{{#link-to &quot;login&quot;}}Login{{/link-to}}<span class="nt">&lt;/li&gt;</span>
+{{else}}
+<span class="nt">&lt;li&gt;</span>{{#link-to &quot;logout&quot;}}Logout{{/link-to}}<span class="nt">&lt;/li&gt;</span>
+{{/if}}
+<span class="nt">&lt;/ul&gt;</span></code></pre></div>
+
+<h1 id="optional-error-handling-on-login">Optional: Error handling on login</h1>
+<p>If you’d like to display relevant errors to your users attemping login, modify the login controller by adding <code>that.set('error', error.responseJSON.error);</code> within the <code>fail</code> block. Then in your <code>login.hbs</code> template you can display them:</p>
+
+<div class="highlight"><pre><code class="language-html" data-lang="html">{{#if error}}
+  <span class="nt">&lt;div</span> <span class="na">class=</span><span class="s">&quot;alert alert-danger&quot;</span><span class="nt">&gt;</span>{{error}}<span class="nt">&lt;/div&gt;</span>
+{{/if}}</code></pre></div>
+
+<h1 id="finishing-up">Finishing up</h1>
+<p>Whilst there is certainly more code written out compared to using an external library, this is using the latest (at time of writing) Ember conventions, and you have complete control without needing to hack anything.</p>
+
+<p>Please leave your feedback in the comments below; I’m more than happy to improve upon this guide and I intend to write more in the future.</p>
+
+
+  </article>
+
+  
+  
+  
+
+</div>
+
+      </div>
+    </div>
+
+    <footer class="site-footer">
+
+  <div class="wrapper">
+
+    <h2 class="footer-heading">Fist Your Way To Good Code</h2>
+
+    <div class="footer-col-wrapper">
+      <div class="footer-col  footer-col-1">
+        <ul class="contact-list">
+          <li>Fist Your Way To Good Code</li>
+          <li><a href="mailto:scottfister@gmail.com">scottfister@gmail.com</a></li>
+        </ul>
+      </div>
+
+      <div class="footer-col  footer-col-2">
+        <ul class="social-media-list">
+          
+          <li>
+            <a href="https://github.com/scottfister">
+              <span class="icon  icon--github">
+                <svg viewBox="0 0 16 16">
+                  <path fill="#828282" d="M7.999,0.431c-4.285,0-7.76,3.474-7.76,7.761 c0,3.428,2.223,6.337,5.307,7.363c0.388,0.071,0.53-0.168,0.53-0.374c0-0.184-0.007-0.672-0.01-1.32 c-2.159,0.469-2.614-1.04-2.614-1.04c-0.353-0.896-0.862-1.135-0.862-1.135c-0.705-0.481,0.053-0.472,0.053-0.472 c0.779,0.055,1.189,0.8,1.189,0.8c0.692,1.186,1.816,0.843,2.258,0.645c0.071-0.502,0.271-0.843,0.493-1.037 C4.86,11.425,3.049,10.76,3.049,7.786c0-0.847,0.302-1.54,0.799-2.082C3.768,5.507,3.501,4.718,3.924,3.65 c0,0,0.652-0.209,2.134,0.796C6.677,4.273,7.34,4.187,8,4.184c0.659,0.003,1.323,0.089,1.943,0.261 c1.482-1.004,2.132-0.796,2.132-0.796c0.423,1.068,0.157,1.857,0.077,2.054c0.497,0.542,0.798,1.235,0.798,2.082 c0,2.981-1.814,3.637-3.543,3.829c0.279,0.24,0.527,0.713,0.527,1.437c0,1.037-0.01,1.874-0.01,2.129 c0,0.208,0.14,0.449,0.534,0.373c3.081-1.028,5.302-3.935,5.302-7.362C15.76,3.906,12.285,0.431,7.999,0.431z"/>
+                </svg>
+              </span>
+
+              <span class="username">scottfister</span>
+            </a>
+          </li>
+          
+
+          
+          <li>
+            <a href="https://twitter.com/scottfister">
+              <span class="icon  icon--twitter">
+                <svg viewBox="0 0 16 16">
+                  <path fill="#828282" d="M15.969,3.058c-0.586,0.26-1.217,0.436-1.878,0.515c0.675-0.405,1.194-1.045,1.438-1.809
+                  c-0.632,0.375-1.332,0.647-2.076,0.793c-0.596-0.636-1.446-1.033-2.387-1.033c-1.806,0-3.27,1.464-3.27,3.27 c0,0.256,0.029,0.506,0.085,0.745C5.163,5.404,2.753,4.102,1.14,2.124C0.859,2.607,0.698,3.168,0.698,3.767 c0,1.134,0.577,2.135,1.455,2.722C1.616,6.472,1.112,6.325,0.671,6.08c0,0.014,0,0.027,0,0.041c0,1.584,1.127,2.906,2.623,3.206 C3.02,9.402,2.731,9.442,2.433,9.442c-0.211,0-0.416-0.021-0.615-0.059c0.416,1.299,1.624,2.245,3.055,2.271 c-1.119,0.877-2.529,1.4-4.061,1.4c-0.264,0-0.524-0.015-0.78-0.046c1.447,0.928,3.166,1.469,5.013,1.469 c6.015,0,9.304-4.983,9.304-9.304c0-0.142-0.003-0.283-0.009-0.423C14.976,4.29,15.531,3.714,15.969,3.058z"/>
+                </svg>
+              </span>
+
+              <span class="username">scottfister</span>
+            </a>
+          </li>
+          
+        </ul>
+      </div>
+
+      <div class="footer-col  footer-col-3">
+        <p class="text">Write an awesome description for your new site here. You can edit this line in _config.yml. It will appear in your document head meta (for Google search results) and in your feed.xml site description.
+</p>
+      </div>
+    </div>
+
+  </div>
+
+</footer>
+
+
+  </body>
+
+</html>
