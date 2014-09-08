@@ -27,7 +27,7 @@ I will be writing this guide for [Ember CLI][ember-cli] - which you really shoul
 # Authenticating with the backend server
 The general consensus on authentication seems to be including a token in request headers. This token is retrieved by the client supplying a valid username/password combination to the server.
 
-A basic ([Bootstrap][get-bootstrap]) `login.hbs` template may look like so:
+A basic ([Bootstrap][get-bootstrap]) `login.hbs` template may look like this:
 
 {% highlight html %}
 {% raw %}

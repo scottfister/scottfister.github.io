@@ -6,8 +6,8 @@
 </description>
     <link>http://scottfister.github.io/</link>
     <atom:link href="http://scottfister.github.io/feed.xml" rel="self" type="application/rss+xml" />
-    <pubDate>Sun, 07 Sep 2014 17:46:19 -0700</pubDate>
-    <lastBuildDate>Sun, 07 Sep 2014 17:46:19 -0700</lastBuildDate>
+    <pubDate>Sun, 07 Sep 2014 17:57:14 -0700</pubDate>
+    <lastBuildDate>Sun, 07 Sep 2014 17:57:14 -0700</lastBuildDate>
     <generator>Jekyll v2.3.0</generator>
     
       <item>
@@ -38,7 +38,7 @@
 &lt;h1 id=&quot;authenticating-with-the-backend-server&quot;&gt;Authenticating with the backend server&lt;/h1&gt;
 &lt;p&gt;The general consensus on authentication seems to be including a token in request headers. This token is retrieved by the client supplying a valid username/password combination to the server.&lt;/p&gt;
 
-&lt;p&gt;A basic (&lt;a href=&quot;http://getbootstrap.com/&quot;&gt;Bootstrap&lt;/a&gt;) &lt;code&gt;login.hbs&lt;/code&gt; template may look like so:&lt;/p&gt;
+&lt;p&gt;A basic (&lt;a href=&quot;http://getbootstrap.com/&quot;&gt;Bootstrap&lt;/a&gt;) &lt;code&gt;login.hbs&lt;/code&gt; template may look like this:&lt;/p&gt;
 
 &lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-html&quot; data-lang=&quot;html&quot;&gt;&lt;span class=&quot;nt&quot;&gt;&amp;lt;form&lt;/span&gt; &lt;span class=&quot;err&quot;&gt;{{&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;action&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;signIn&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;on=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&amp;quot;submit&amp;quot;&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;}}&lt;/span&gt;&lt;span class=&quot;nt&quot;&gt;&amp;gt;&lt;/span&gt;
 
