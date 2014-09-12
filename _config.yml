@@ -1,8 +1,8 @@
 # Site settings
-title: Fist Your Way To Good Code
+title: Scott Fister's Blog
 email: scottfister@gmail.com
 description: > # this means to ignore newlines until "baseurl:"
-  I like Ember and iOS.
+  I like Ember, Rails and iOS.
 baseurl: "" # the subpath of your site, e.g. /blog/
 url: "http://scottfister.github.io" # the base hostname & protocol for your site
 twitter_username: scottfister
