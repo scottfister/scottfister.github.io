@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
-    <title>Fist Your Way To Good Code</title>
-    <description>Write an awesome description for your new site here. You can edit this line in _config.yml. It will appear in your document head meta (for Google search results) and in your feed.xml site description.
+    <title>Scott Fister&#39;s Blog</title>
+    <description>I like Ember, Rails and iOS.
 </description>
     <link>http://scottfister.github.io/</link>
     <atom:link href="http://scottfister.github.io/feed.xml" rel="self" type="application/rss+xml" />
-    <pubDate>Sun, 07 Sep 2014 22:46:14 -0700</pubDate>
-    <lastBuildDate>Sun, 07 Sep 2014 22:46:14 -0700</lastBuildDate>
+    <pubDate>Fri, 12 Sep 2014 14:24:08 -0700</pubDate>
+    <lastBuildDate>Fri, 12 Sep 2014 14:24:08 -0700</lastBuildDate>
     <generator>Jekyll v2.3.0</generator>
     
       <item>
